@@ -171,7 +171,7 @@ func GetServices(fileName string) ([]Service, error) {
 	if err != nil {
 		return []Service{}, err
 	}
-	addServiceLines, err := GetConfig(file, "(add service).*")
+	addServiceLines, err := GetConfig(file, "(add service ).*")
 	if err != nil {
 		return []Service{}, err
 	}
