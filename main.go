@@ -132,7 +132,23 @@ func BuildServer(fileName, serverName string) (Server, error) {
 				}
 			}
 			if intSlice != 0 {
-				errors.New("There is an unexpected quote in add server command:  This is the offending line: " + serverLine)
+				// There are instances where comments are added to the server configuration.  This block handles situations
+				// where comments are included.  Because comments are included, there are additional quotes surrounding
+				// the comments.
+				extractNoQuote, err := ExtractNoQuote(serverLine)
+				if err != nil {
+					return Server{}, err
+				}
+				lineTrim := strings.TrimSpace(extractNoQuote)
+				if serverName == lineTrim {
+					var server Server
+					server.name = lineTrim
+					removeName := strings.Replace(serverLine, extractNoQuote, "", 1)
+					trimSpace := strings.TrimSpace(removeName)
+					serverCommentLineArray := strings.Split(trimSpace, " ")
+					server.ipAddress = serverCommentLineArray[0]
+					return server, nil
+				}
 			}
 		}
 		if length == 0 {
@@ -145,7 +161,7 @@ func BuildServer(fileName, serverName string) (Server, error) {
 			}
 		}
 	}
-	return Server{}, errors.New("No servers returned.")
+	return Server{}, errors.New("no servers returned")
 }
 
 // GetServices is a function that returns an array of Load Balancing services.  It accepts a filename
@@ -298,7 +314,7 @@ func GetServices(fileName string) ([]Service, error) {
 	return services, nil
 }
 
-// CreateFile is a fucntion that accepts a file name as a parameter and returns a pointer to a file.
+// CreateFile is a function that accepts a file name as a parameter and returns a pointer to a file.
 func CreateFile(fileName string) (*os.File, error) {
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -310,7 +326,8 @@ func CreateFile(fileName string) (*os.File, error) {
 // main contains the business logic of the program.  It returns a file with the Load Balancing service name, server
 // name and server IP address of services that are using usip (use source IP address).
 func main() {
-	filename := os.Args[1]
+	//filename := os.Args[1]
+	filename := "ns.conf"
 	services, err := GetServices(filename)
 	if err != nil {
 		fmt.Println(err)
