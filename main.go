@@ -326,8 +326,7 @@ func CreateFile(fileName string) (*os.File, error) {
 // main contains the business logic of the program.  It returns a file with the Load Balancing service name, server
 // name and server IP address of services that are using usip (use source IP address).
 func main() {
-	//filename := os.Args[1]
-	filename := "ns.conf"
+	filename := os.Args[1]
 	services, err := GetServices(filename)
 	if err != nil {
 		fmt.Println(err)
